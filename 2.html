@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <title>Title</title>
+    <style>
+        *{padding: 0}
+        li{list-style: none}
+    </style>
+    <script src="http://libs.baidu.com/jquery/1.8.3/jquery.min.js"></script>
+</head>
+<body>
+
+  <ul id="data" style="width: 100%;text-align: center">
+
+
+  </ul>
+
+</body>
+
+
+<script>
+
+
+    /*获取地址栏参数，此例为id和name*/
+    function GetRequest() {
+        var url = location.search; //获取url中"?"符后的字串
+        var theRequest = new Object();
+        if (url.indexOf("?") != -1) {
+            var str = url.substr(1);
+            strs = str.split("&");
+            for(var i = 0; i < strs.length; i ++) {
+                theRequest[strs[i].split("=")[0]]=unescape(strs[i].split("=")[1]);
+            }
+        }
+        return theRequest;
+    }
+    var Request = new Object();
+    Request = GetRequest();
+    var a = Request['id'];
+    var b = Request['name'];
+
+    function get(id) {
+        $.ajax({
+            url:'https://api.douban.com/v2/movie/subject/'+id,
+            type:'get',
+            dataType:"JSONP",
+            success:function (res) {
+
+               var tpl='\
+                   <li>\
+                   <img src='+ res.images.large+' alt="">\
+                    <p>影片:'+ res.title +'</p>\
+                    <h1>故事简介</h1>\
+                    <p style="width: 270px;display: block;margin: 0 auto">' +res.summary +'</p>\
+                    </li>';
+
+
+                var tpl1='<li>' +
+                    '<p>豆瓣评分：'+ res.rating.average +' </p>' +
+                    '</li>';
+
+
+                var tpl2='<li>演员:</li>';
+
+                for(let i=0;i<res.casts.length;i++){
+
+                    tpl2+= '<li style="display: inline-block"> <p>' + res.casts[i].name + '</p> </li> '
+
+                }
+
+                var tpl3='<li id="type">影片类型：</li>';
+
+                for(let i=0;i<res.genres.length;i++){
+
+                    tpl3+=' <li style="display: inline-block"> <p>' + res.genres[i] + '</p> </li> '
+
+                }
+
+                $('#data').append(tpl,tpl1,tpl2,tpl3);
+
+            }
+        })
+    }
+
+    get(a)
+
+</script>
+
+
+<script type="text/javascript">
+    /*延迟加载函数*//*多次点击只触发一次*/
+    var timeoutflag = null;
+    $('#data').click(function() {
+        if(timeoutflag != null){
+            clearTimeout(timeoutflag);
+        }
+        timeoutflag=setTimeout(function(){
+            dosomething();
+        },500);
+    });
+    function dosomething(){
+        alert(1);
+    }
+</script>
+
+</html>

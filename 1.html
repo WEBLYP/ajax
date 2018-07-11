@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <title>Title</title>
+    <style>
+    *{margin: 0;padding: 0}
+        body{position: relative;height: 100%;width: 100%;-webkit-overflow-scrolling: touch;}
+        ul{height: 850px;overflow: hidden;overflow-y: auto;margin: 0;padding: 0;text-align: center;}
+        li{list-style: none}
+        #seemore{padding: 10px 0;text-align: center;width: 100%;position: fixed;bottom: 0;background-color: #fff;display: none;}
+    </style>
+    <script src="http://libs.baidu.com/jquery/1.8.3/jquery.min.js"></script>
+</head>
+<body>
+
+
+  <ul id="data">
+
+  </ul>
+
+  <div id="seemore" style="display: block;background-color: #000;color: #fff"><img src="waitting.gif" style="width: 20px" alt=""> 加载中......</div>
+
+</body>
+<script>
+
+    var $data= $('#data');
+
+/*----------↓--------------加载页面----------------↓-----------*/
+    function get(count,start,total) {
+
+        $.ajax({
+            url:'https://api.douban.com/v2/movie/in_theaters?count='+count+'&start='+start+'&total='+total,
+            type:'get',
+            dataType:"JSONP",
+            success:function (res) {
+               setTimeout(function () {
+                   $('#seemore').hide();
+               },1000);
+               console.log(res);
+               var tpl='';
+
+                for(var i=0;i<res.subjects.length;i++){
+
+                    tpl+='<li class="li" id='+ res.subjects[i].id+'><img class="imgs" src='+ res.subjects[i].images.small +' alt=""></li>'
+
+                }
+
+                    var tpl1='<li>' +
+                        '<p class="pps">共计：<span id="total">'+  count  +'</span>条</p>' +
+                        '</li>';
+
+                $('#data').append(tpl,tpl1);
+
+            }
+
+        });
+
+    }
+
+    get(5,0,10);
+/*-----------↑---------------加载页面-------------↑----------------*/
+
+
+/*-----------↓----------------跳转至详情页-----------↓--------------*/
+    function post(id,url) {
+        
+        $.ajax({
+            url:url,
+            type:'post',
+            data:id,
+            success:function (res) {
+
+                window.location.href='2.html?id='+id;
+
+            }
+        })
+    }
+
+    $data.on('click','.li',function (id) {
+
+        id=$(this)[0].id;
+
+        post(id);
+
+    });
+
+
+/*-----------↑----------------跳转至详情页-----------↑--------------*/
+
+/*-----------↓------------------scroll&see&more-----------↓--------------*/
+
+    var i=1;
+    var gd=null;
+    $data.scroll(function(e){
+        var $this =$(this),
+            viewH =$(this).height(),//可见高度
+            contentH =$(this).get(0).scrollHeight,//内容高度
+            scrollTop =$(this).scrollTop();//滚动高度
+
+        /*----↓----延迟加载更多---↓---*/
+        if(gd!=null){ clearInterval(gd);gd=null }
+
+        gd=setTimeout(function () {
+            console.log(e);
+            if(scrollTop/(contentH -viewH)>=0.95){ //到达底部xxx时,加载新内容
+            	$('#seemore').show();
+                i++;
+                get(5,5*(i-1),0);
+
+            }
+
+        },500)
+
+       /*---↑-----延迟加载更多----↑--*/
+
+    });
+
+/*-----------↑------------------scroll&see&more-----------↑--------------*/
+
+
+</script>
+
+</html>
